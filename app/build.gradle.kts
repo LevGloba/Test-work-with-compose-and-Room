@@ -26,6 +26,8 @@ android {
         }*/
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        setProperty("archivesBaseName", "ip-test-task")
     }
 
     buildTypes {
