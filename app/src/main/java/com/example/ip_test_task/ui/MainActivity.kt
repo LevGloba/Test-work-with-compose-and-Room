@@ -185,30 +185,30 @@ fun RefactoringItem(
                             )
                         }
                     }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { onDismissAlert() }
                     ) {
-                        TextButton(
-                            onClick = { onDismissAlert() }
-                        ) {
-                            Text("Отмена")
-                        }
+                        Text("Отмена")
+                    }
 
-                        TextButton(
-                            onClick = {
-                                confirm(
-                                    copy(
-                                        amount = count.longValue
-                                    )
+                    TextButton(
+                        onClick = {
+                            confirm(
+                                copy(
+                                    amount = count.longValue
                                 )
-                            }
-                        ) {
-                            Text("Принять")
+                            )
                         }
+                    ) {
+                        Text("Принять")
                     }
                 }
+
             }
         }
     }
