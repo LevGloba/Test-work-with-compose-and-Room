@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ip-test-task</string>
+    <string name="count_items">Количество товара</string>
+    <string name="cancel_text">Отмена</string>
+    <string name="ok">Принять</string>
+    <string name="seek_item">Поиск товара</string>
+    <string name="redactring_count_item">редактировать кол-во товара</string>
+    <string name="deleting_item">удалить товар</string>
+    <string name="on_a_warehous">На складе</string>
+    <string name="date_add">Дата добавление</string>
 </resources>

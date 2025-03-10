@@ -39,12 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ip_test_task.R
 import com.example.ip_test_task.model.ContentEntityUI
 import com.example.ip_test_task.ui.theme.IptesttaskTheme
@@ -81,9 +83,9 @@ fun Greeting(
     }
     val searchedText = textState.value.text
     mainViewModel.run {
-        val uiList = mutableList
+        val (uiList, redactItemIsShow) = stateUi.collectAsStateWithLifecycle().value
 
-        mutableRedactItem?.let {
+        redactItemIsShow?.let {
             RefactoringItem(
                 item = it,
                 confirm = { contentEntityUI -> mainViewModel.redactingItem(contentEntityUI) }
@@ -139,7 +141,7 @@ fun RefactoringItem(
                     modifier = Modifier.padding(0.dp, 10.dp)
                 )
 
-                Text("Количество товара", fontSize = 24.sp, fontFamily = FontFamily.Serif)
+                Text(stringResource(R.string.count_items), fontSize = 24.sp, fontFamily = FontFamily.Serif)
 
                 Row(
                     modifier = Modifier
@@ -193,7 +195,7 @@ fun RefactoringItem(
                     TextButton(
                         onClick = { onDismissAlert() }
                     ) {
-                        Text("Отмена")
+                        Text(stringResource(R.string.cancel_text))
                     }
 
                     TextButton(
@@ -205,7 +207,7 @@ fun RefactoringItem(
                             )
                         }
                     ) {
-                        Text("Принять")
+                        Text(stringResource(R.string.ok))
                     }
                 }
 
@@ -223,7 +225,7 @@ fun SearchBar(textFiledList: MutableState<TextFieldValue>) {
             textFiledList.value = value
         },
         label = {
-            Text("Поиск товара")
+            Text(stringResource(R.string.seek_item))
         }
     )
 }
@@ -238,12 +240,13 @@ fun CardItem(
     val modifier = Modifier.fillMaxWidth()
     val spaceBetween = Arrangement.SpaceBetween
     item.run {
+        val lightGray = Color.LightGray
         Card(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(10.dp, 10.dp),
             elevation = CardDefaults.elevatedCardElevation(10.dp),
-            colors = CardColors(Color.White, Color.Black, Color.LightGray, Color.LightGray)
+            colors = CardColors(Color.White, Color.Black, lightGray, lightGray)
         ) {
             Column(
                 modifier = modifier
@@ -271,7 +274,7 @@ fun CardItem(
                             Icon(
                                 painterResource(R.drawable.baseline_create_24),
                                 tint = Color.Blue,
-                                contentDescription = "редактировать кол-во товара"
+                                contentDescription = stringResource(R.string.redactring_count_item)
                             )
                         }
 
@@ -283,7 +286,7 @@ fun CardItem(
                             Icon(
                                 painterResource(R.drawable.baseline_backspace_24),
                                 tint = Color.Red,
-                                contentDescription = "удалить товар"
+                                contentDescription = stringResource(R.string.redactring_count_item)
                             )
                         }
                     }
@@ -309,8 +312,8 @@ fun CardItem(
                     modifier = modifier,
                     horizontalArrangement = spaceBetween
                 ) {
-                    Text("На складе")
-                    Text("Дата добавления")
+                    Text(stringResource(R.string.on_a_warehous))
+                    Text(stringResource(R.string.date_add))
                 }
 
                 Row(
