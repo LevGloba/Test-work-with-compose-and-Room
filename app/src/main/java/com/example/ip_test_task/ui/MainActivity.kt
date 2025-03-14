@@ -1,24 +1,30 @@
 package com.example.ip_test_task.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -29,15 +35,30 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -47,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ip_test_task.R
 import com.example.ip_test_task.model.ContentEntityUI
 import com.example.ip_test_task.ui.theme.IptesttaskTheme
@@ -55,8 +77,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels<MainViewModel>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -64,7 +84,6 @@ class MainActivity : ComponentActivity() {
             IptesttaskTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        mainViewModel = mainViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -75,7 +94,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(
-    mainViewModel: MainViewModel,
+    mainViewModel: MainViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
     val textState = remember {
@@ -94,10 +113,7 @@ fun Greeting(
             }
         }
 
-        Column(
-            modifier = modifier
-                .safeDrawingPadding()
-        ) {
+        Column {
             SearchBar(textState)
 
             LazyColumn {
@@ -218,16 +234,55 @@ fun RefactoringItem(
 
 @Composable
 fun SearchBar(textFiledList: MutableState<TextFieldValue>) {
+    val focusRequester = remember { FocusRequester() }
+    val isFocus = remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    keyboardAsState{
+        focusManager.clearFocus()
+    }
+    val keyboardSofterController = LocalSoftwareKeyboardController.current
+    val paddingValues = WindowInsets.statusBars
+        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+        .asPaddingValues()
     TextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { isFocus.value = it.isFocused }
+            .fillMaxWidth()
+            .padding(paddingValues),
+        trailingIcon =
+        {
+            if (isFocus.value)
+                IconButton({
+                    textFiledList.value = TextFieldValue()
+                    keyboardSofterController?.hide()
+                }) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_close_24),
+                        contentDescription = "", tint = Color.Red
+                    )
+                }
+        },
         value = textFiledList.value,
         onValueChange = { value ->
             textFiledList.value = value
         },
         label = {
             Text(stringResource(R.string.seek_item))
-        }
+        },
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent
+        ),
     )
+}
+
+@Composable
+fun keyboardAsState(body: () -> Unit): State<Boolean> {
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    if (!isImeVisible)
+        body()
+    return rememberUpdatedState(isImeVisible)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -331,7 +386,7 @@ fun CardItem(
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    /*IptesttaskTheme {
+    IptesttaskTheme {
         Greeting(mainViewModel = viewModel())
-    }*/
+    }
 }
